@@ -1,0 +1,23 @@
+# Stage 2 fine-tuning config.
+stage: finetune
+
+repo_id: <your-hf-user>/so101_stacking   # your ~50 recorded episodes
+pretrained: runs/pretrain/best.pt
+
+workspace_image_key: observation.images.top
+wrist_image_key: observation.images.wrist
+state_key: observation.state
+action_key: action
+
+num_proposals: 15
+history: 9
+frame_stride: 1
+token_dim: 192
+
+finetune_lr: 1.0e-5
+freeze_backbones_on_finetune: true
+epochs: 50
+batch_size: 16
+grad_clip: 0.1
+
+out: runs/finetune

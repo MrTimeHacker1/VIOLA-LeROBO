@@ -1,0 +1,32 @@
+# Stage 1 pretraining config. Fields mirror viola/config.py; scripts read these
+# as overrides. Edit repo_ids/caches to match what you downloaded.
+stage: pretrain
+
+repo_ids:
+  - lerobot/svla_so100_stacking
+  - lerobot/svla_so101_pickplace
+caches:
+  - caches/svla_so100_stacking.npy
+  - caches/svla_so101_pickplace.npy
+
+# --- observation keys (must match your datasets' feature names) ---
+workspace_image_key: observation.images.top
+wrist_image_key: observation.images.wrist
+state_key: observation.state
+action_key: action
+
+# --- paper hyperparameters (do not change unless you know why) ---
+num_proposals: 15
+history: 9
+frame_stride: 1          # native_fps / control_rate; see README
+token_dim: 192
+n_layers: 4
+n_heads: 6
+ffn_dim: 1024
+n_modes: 5
+lr: 1.0e-4
+epochs: 50
+batch_size: 16
+grad_clip: 0.1
+
+out: runs/pretrain
