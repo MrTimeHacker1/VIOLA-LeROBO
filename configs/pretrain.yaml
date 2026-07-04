@@ -1,32 +1,39 @@
-# Stage 1 pretraining config. Fields mirror viola/config.py; scripts read these
-# as overrides. Edit repo_ids/caches to match what you downloaded.
-stage: pretrain
+# Stage-1 pretrain config (loaded via VIOLAConfig.from_yaml; CLI flags override).
+# Symmetric dual-camera: wrist token ON. Only data / lr / frozen weights differ
+# between pretrain and finetune.
 
-repo_ids:
-  - lerobot/svla_so100_stacking
-  - lerobot/svla_so101_pickplace
-caches:
-  - caches/svla_so100_stacking.npy
-  - caches/svla_so101_pickplace.npy
-
-# --- observation keys (must match your datasets' feature names) ---
 workspace_image_key: observation.images.top
 wrist_image_key: observation.images.wrist
 state_key: observation.state
 action_key: action
+fps: 30
 
-# --- paper hyperparameters (do not change unless you know why) ---
+# architecture (paper constants — do not change casually)
 num_proposals: 15
 history: 9
-frame_stride: 1          # native_fps / control_rate; see README
+image_size: 256
+wrist_image_size: 256
 token_dim: 192
 n_layers: 4
 n_heads: 6
 ffn_dim: 1024
+dropout: 0.1
 n_modes: 5
+action_dim: 6
+state_dim: 6
+
+# optimisation (paper)
 lr: 1.0e-4
+weight_decay: 1.0e-4
 epochs: 50
 batch_size: 16
 grad_clip: 0.1
+frame_stride: 1
 
-out: runs/pretrain
+# runtime
+mixed_precision: bf16
+gradient_accumulation_steps: 1
+num_workers: 8
+seed: 42
+log_every: 10
+# output_dir: /path/to/your/runs   # user-writable; defaults to ~/.cache/viola_so101/runs

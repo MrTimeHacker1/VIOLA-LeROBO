@@ -3,8 +3,7 @@
 A ResNet-18 trunk, trained FROM SCRATCH (random init), encodes the workspace
 image into a 16x16 spatial feature map. The paper's Appendix B.2 shows that a
 from-scratch spatial map produces more "actionable" features for control than a
-frozen/pretrained detection FPN, so we deliberately do not load ImageNet
-weights here.
+frozen/pretrained detection FPN, so we deliberately do not load ImageNet weights.
 
 For each of the K proposal boxes we ROIAlign a 6x6 grid from the spatial map,
 flatten, and linearly project to a token. The box positional feature is then
@@ -13,6 +12,7 @@ same region to obtain a region feature").
 """
 
 from __future__ import annotations
+
 import torch
 import torch.nn as nn
 from torchvision.models import resnet18
@@ -26,7 +26,8 @@ def build_spatial_trunk() -> nn.Module:
     """ResNet-18 up to and including layer3.
 
     For a 256x256 input the output is [B, 256, 16, 16] (stride 16), which is the
-    16x16 spatial feature map specified in Appendix A. Weights are random."""
+    16x16 spatial feature map specified in Appendix A. Weights are random
+    (``weights=None`` -- the modern torchvision API, never ``pretrained=``)."""
     net = resnet18(weights=None)
     return nn.Sequential(
         net.conv1, net.bn1, net.relu, net.maxpool,

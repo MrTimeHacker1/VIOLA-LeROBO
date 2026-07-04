@@ -1,5 +1,19 @@
-torch>=2.2
-torchvision>=0.17
-numpy>=1.24
-lerobot>=0.3
+# Core (model + training + checkpoints). Pinned to reasonably modern floors.
+torch>=2.4
+torchvision>=0.19
+numpy>=1.26
+tqdm>=4.66
 pyyaml>=6.0
+accelerate>=1.0
+safetensors>=0.4.3
+huggingface_hub>=0.24
+
+# Optional: real dataset loading + deployment.
+# av1-encoded LeRobot videos require FFmpeg available to torchcodec:
+#   conda install -c conda-forge "ffmpeg=7"
+#   python -c "from torchcodec.decoders import VideoDecoder"
+lerobot>=0.5
+torchcodec>=0.4
+
+# Optional: experiment tracking.
+wandb>=0.17

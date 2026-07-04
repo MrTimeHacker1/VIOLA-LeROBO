@@ -1,19 +1,23 @@
 """Context feature encoders (VIOLA Sec. 3.2 + Appendix A).
 
-Three context tokens per frame:
+Three context tokens per frame (dual-camera SO-101 => all three present):
 
-  global       : Spatial Softmax over the workspace spatial feature map (the SAME
-                 map produced by RegionEncoder's trunk) -> encodes task stage.
-  eye-in-hand  : a SEPARATE, from-scratch ResNet-18 over the wrist image,
-                 followed by Spatial Softmax -> sees what the gripper occludes.
-                 (Paper: "we use a ResNet-18 backbone followed by Spatial Softmax
-                 to get eye-in-hand features.")
+  global        : Spatial Softmax over the workspace spatial feature map (the
+                  SAME map produced by RegionEncoder's trunk) -> encodes task
+                  stage.
+  eye-in-hand   : a SEPARATE, from-scratch ResNet-18 over the wrist image,
+                  followed by Spatial Softmax -> sees what the gripper occludes.
+                  (Paper: "we use a ResNet-18 backbone followed by Spatial
+                  Softmax to get eye-in-hand features.")
   proprioceptive: a single linear layer over the robot state.
 
-The wrist trunk does NOT share weights with the workspace trunk.
+The wrist trunk does NOT share weights with the workspace trunk. The wrist
+pathway is built whenever ``wrist_image_key`` is set (the SO-101 default), so
+pretrain and finetune use an identical token schema.
 """
 
 from __future__ import annotations
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -56,10 +60,12 @@ class ContextEncoder(nn.Module):
 
     def forward(self, workspace_fmap, wrist_image, state):
         """workspace_fmap: [N,C,16,16]; wrist_image: [N,3,S,S] or None;
-        state: [N, state_dim]. Returns context tokens [N, n_context, token_dim]."""
+        state: [N, state_dim]. Returns context tokens [N, n_context, token_dim].
+
+        Token order: [global, wrist(if present), proprio]."""
         tokens = [self.global_proj(self.global_ss(workspace_fmap))]
         if self.use_wrist:
             wf = self.wrist_trunk(wrist_image)
             tokens.append(self.wrist_proj(self.wrist_ss(wf)))
         tokens.append(self.proprio_proj(state))
-        return torch.stack(tokens, dim=1)                         # [N,n_ctx,token_dim]
+        return torch.stack(tokens, dim=1)                         # [N,n_ctx,D]

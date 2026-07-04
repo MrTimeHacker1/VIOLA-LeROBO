@@ -3,14 +3,16 @@
 The action-token latent is passed through a two-layer MLP (1024 hidden each),
 then projected to the parameters of a Gaussian Mixture Model with 5 modes over
 the action space. Training loss is the negative log-likelihood of the
-demonstrated action under the mixture.
+demonstrated action under the mixture. Deployment takes the mean of the
+highest-weight component.
 """
 
 from __future__ import annotations
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torch.distributions import Normal, Categorical, MixtureSameFamily, Independent
+from torch.distributions import Categorical, Independent, MixtureSameFamily, Normal
 
 from .config import VIOLAConfig
 
@@ -34,7 +36,7 @@ class GMMHead(nn.Module):
         m, a = self.cfg.n_modes, self.cfg.action_dim
         means = self.mean_head(h).reshape(b, m, a)
         scales = F.softplus(self.scale_head(h)).reshape(b, m, a)
-        scales = scales.clamp(self.cfg.min_std, self.cfg.max_std)
+        scales = scales.clamp(self.cfg.min_std, self.cfg.max_std)  # min-std floor
         logits = self.logit_head(h)                               # [B, m]
         return means, scales, logits
 

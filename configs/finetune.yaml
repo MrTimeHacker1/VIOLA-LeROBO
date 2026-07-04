@@ -1,23 +1,36 @@
-# Stage 2 fine-tuning config.
-stage: finetune
-
-repo_id: <your-hf-user>/so101_stacking   # your ~50 recorded episodes
-pretrained: runs/pretrain/best.pt
+# Stage-2 finetune config (loaded via VIOLAConfig.from_yaml; CLI flags override).
+# Same dual-camera schema as pretrain; lower lr; backbones frozen by default.
 
 workspace_image_key: observation.images.top
 wrist_image_key: observation.images.wrist
 state_key: observation.state
 action_key: action
+fps: 30
 
 num_proposals: 15
 history: 9
-frame_stride: 1
+image_size: 256
+wrist_image_size: 256
 token_dim: 192
+n_layers: 4
+n_heads: 6
+ffn_dim: 1024
+dropout: 0.1
+n_modes: 5
+action_dim: 6
+state_dim: 6
 
+# finetune optimisation: 10x lower lr, freeze both ResNet-18 backbones
 finetune_lr: 1.0e-5
 freeze_backbones_on_finetune: true
+weight_decay: 1.0e-4
 epochs: 50
 batch_size: 16
 grad_clip: 0.1
+frame_stride: 1
 
-out: runs/finetune
+mixed_precision: bf16
+gradient_accumulation_steps: 1
+num_workers: 4
+seed: 42
+log_every: 10

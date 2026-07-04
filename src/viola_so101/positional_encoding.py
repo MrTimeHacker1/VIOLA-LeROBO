@@ -8,16 +8,16 @@ Box positional encoding (region "where"):
                    cos(angle)  if (j // 4) is odd
     The paper feeds pixel coordinates (not normalized) so the sinusoids have a
     usable dynamic range; we therefore multiply normalized boxes by image_size.
-    base = 10 (paper).
+    base = 10 (paper). The box PE is ADDED to the region's visual feature.
 
 Temporal positional encoding (frame order):
-    For position pos in {0..H} and dimension i:
-        PE[2i]   = sin(pos / base ** (2i / D))
-        PE[2i+1] = cos(pos / base ** ((2i+1) / D))
-    base = 10 (paper).
+    Standard sinusoidal table over positions {0..H}, base = 10 (paper). Applied
+    with index 0 = CURRENT frame (h_t, PE_0) and index H = OLDEST frame
+    (h_{t-H}, PE_H), matching the paper's z_t = { h_{t-i} + PE_i }_{i=0..H}.
 """
 
 from __future__ import annotations
+
 import torch
 import torch.nn as nn
 

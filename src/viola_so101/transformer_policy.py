@@ -7,6 +7,7 @@ that has attended over all region/context tokens and is fed to the GMM head.
 """
 
 from __future__ import annotations
+
 import torch
 import torch.nn as nn
 
@@ -25,12 +26,12 @@ class TransformerPolicy(nn.Module):
             dropout=cfg.dropout,
             activation="relu",
             batch_first=True,
-            norm_first=False,          # post-norm: Y = FFN(LayerNorm(MHSA(X)))
+            norm_first=False,          # post-norm: Y = LayerNorm(X + Sublayer(X))
         )
         self.encoder = nn.TransformerEncoder(layer, num_layers=cfg.n_layers)
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
-        """tokens: [B, n_obs_tokens, token_dim]. Returns action latent [B, token_dim]."""
+        """tokens: [B, n_obs_tokens, D]. Returns action latent [B, D]."""
         b = tokens.shape[0]
         act = self.action_token.expand(b, -1, -1)                 # [B,1,D]
         seq = torch.cat([act, tokens], dim=1)                     # [B,1+n,D]

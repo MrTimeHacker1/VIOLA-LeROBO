@@ -1,0 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "viola-so101"
+version = "0.1.0"
+description = "From-scratch VIOLA (CoRL 2022) object-centric imitation policy adapted to the SO-101 arm in the LeRobot ecosystem, with a symmetric dual-camera pretrain -> finetune workflow."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "VIOLA-SO101" }]
+dependencies = [
+    "torch>=2.4",
+    "torchvision>=0.19",
+    "numpy>=1.26",
+    "tqdm>=4.66",
+    "pyyaml>=6.0",
+    "accelerate>=1.0",
+    "safetensors>=0.4.3",
+    "huggingface_hub>=0.24",
+]
+
+[project.optional-dependencies]
+# LeRobot + torchcodec are only needed for real dataset loading / deployment.
+# The synthetic smoke test and training dry-run do NOT require them.
+data = ["lerobot>=0.5", "torchcodec>=0.4"]
+wandb = ["wandb>=0.17"]
+dev = ["pytest>=8.0"]
+
+[project.scripts]
+viola-inspect = "viola_so101.inspect_dataset:main"
+viola-preprocess = "viola_so101.preprocess:main"
+viola-pretrain = "viola_so101.train.pretrain:main"
+viola-finetune = "viola_so101.train.finetune:main"
+viola-deploy = "viola_so101.deploy:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/viola_so101"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
